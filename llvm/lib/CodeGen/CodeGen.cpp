@@ -126,6 +126,8 @@ void llvm::initializeCodeGen(PassRegistry &Registry) {
   // dingzhu patch
   initializeMarkInstIndexPass(Registry);
   initializeMyMIRPrinterPass(Registry);
+  initializeMyMIRDumperPass(Registry);
+  initializeMyIRDumperPass(Registry);
 }
 
 void LLVMInitializeCodeGen(LLVMPassRegistryRef R) {

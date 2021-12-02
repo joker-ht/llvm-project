@@ -200,6 +200,8 @@ add_llvm_component_library(LLVMCodeGen
 
   MarkInstIndex.cpp
   MyMIRPrinter.cpp
+  MyMIRDumper.cpp
+  MyIRDumper.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/CodeGen
@@ -227,3 +229,5 @@ add_subdirectory(SelectionDAG)
 add_subdirectory(AsmPrinter)
 add_subdirectory(MIRParser)
 add_subdirectory(GlobalISel)
+add_subdirectory(protobuf)
+target_link_libraries(LLVMCodeGen PRIVATE myproto)

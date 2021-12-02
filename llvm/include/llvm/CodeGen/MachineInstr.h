@@ -35,6 +35,8 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+// Jianhao
+#include <list>
 
 namespace llvm {
 
@@ -53,6 +55,9 @@ class StringRef;
 class TargetInstrInfo;
 class TargetRegisterClass;
 class TargetRegisterInfo;
+
+// Jianhao
+typedef std::list<std::tuple<std::string,unsigned,unsigned>> DebuginfoList;
 
 //===----------------------------------------------------------------------===//
 /// Representation of each machine instruction.
@@ -418,6 +423,13 @@ public:
   const DebugLoc &getDebugLoc() const { return debugLoc; }
 
   /// dingzhu patch
+  std::string getOpType();
+
+  /// Returns the opcode name of this MachineInstr.
+  std::string getOpcodeName() const;
+
+  /// write debuginfo to DebuginfoList
+  void getDebugInfoTree(DebuginfoList &DIList, bool &status);
 
   InstIndex *getInstIndex() const { return debugLoc.getInstIndex(); }
 

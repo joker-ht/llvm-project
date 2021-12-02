@@ -2400,3 +2400,48 @@ unsigned MachineInstr::getDebugInstrNum(MachineFunction &MF) {
     DebugInstrNum = MF.getNewDebugInstrNum();
   return DebugInstrNum;
 }
+
+/// dingzhu
+/// Returns the opcode name of this MachineInstr.
+std::string MachineInstr::getOpcodeName() const {
+  const MachineFunction *MF = getMFIfAvailable(*this);
+  const TargetInstrInfo *TII = MF->getSubtarget().getInstrInfo();
+  if (TII){
+      std::string opcodename = TII->getName(getOpcode()).str();
+      return opcodename;
+  }
+  return "unknown opcode";
+}
+
+std::string MachineInstr::getOpType() {
+    if (isConditionalBranch()) {
+        return "ConditionalBranch";
+    }
+    if (isCompare()) {
+        return "Compare";
+    }
+    return "Others";
+}
+
+/// dingzhu
+/// write debuginfo to DebuginfoList
+void MachineInstr::getDebugInfoTree(DebuginfoList &DIList, bool &status) {
+  const DebugLoc &debugInfo = this->getDebugLoc();
+  if (!debugInfo) {
+    status = false;
+    return;
+  }
+
+  DebugLoc debugInfoTmp = debugInfo;
+  do {
+    auto *Scope = cast<DIScope>(debugInfoTmp.getScope());
+    const std::string &filename = (*Scope).getFilename().str();
+    unsigned linenub = debugInfoTmp.getLine();
+    unsigned colnub = debugInfoTmp.getCol();
+    DIList.push_back(make_tuple(filename, linenub, colnub));
+  } while ((debugInfoTmp = debugInfoTmp.getInlinedAt()));
+
+  status = true;
+  return;
+
+}

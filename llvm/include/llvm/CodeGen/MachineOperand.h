@@ -313,6 +313,10 @@ public:
 
   void dump() const;
 
+  /// dingzhu
+  /// return the name of this operand
+  std::string getOperandName() const;
+
   //===--------------------------------------------------------------------===//
   // Accessors that tell you what kind of MachineOperand you're looking at.
   //===--------------------------------------------------------------------===//

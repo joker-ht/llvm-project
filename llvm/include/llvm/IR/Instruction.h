@@ -29,6 +29,8 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+#include <list>
+#include <tuple>
 
 namespace llvm {
 
@@ -37,6 +39,9 @@ class FastMathFlags;
 class MDNode;
 class Module;
 struct AAMDNodes;
+
+/// dingzhu patch
+typedef std::list<std::tuple<std::string,unsigned,unsigned>> DebuginfoList;
 
 template <> struct ilist_alloc_traits<Instruction> {
   static inline void deleteNode(Instruction *V);
@@ -370,6 +375,8 @@ public:
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
 
   /// dingzhu patch
+  void getDebugInfoTree(DebuginfoList &DIList, bool &status);
+
   InstIndex *getInstIndex() const { return DbgLoc.getInstIndex(); }
 
   const InstIndexSet &getInstIndexSet() const { return DbgLoc.getInstIndexSet(); }

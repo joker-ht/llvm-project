@@ -870,3 +870,25 @@ Instruction *Instruction::clone() const {
   New->copyMetadata(*this);
   return New;
 }
+
+// dingzhu patch
+void Instruction::getDebugInfoTree(DebuginfoList &DIList, bool &status){
+  const DebugLoc &debugInfo = this->getDebugLoc();
+  if (!debugInfo) {
+    status = false;
+    return;
+  }
+
+  DebugLoc debugInfoTmp = debugInfo;
+  do {
+    auto *Scope = cast<DIScope>(debugInfoTmp.getScope());
+    const std::string &filename = (*Scope).getFilename().str();
+    unsigned linenub = debugInfoTmp.getLine();
+    unsigned colnub = debugInfoTmp.getCol();
+    DIList.push_back(make_tuple(filename, linenub, colnub));
+  } while ((debugInfoTmp = debugInfoTmp.getInlinedAt()));
+
+  status = true;
+  return;
+
+}
