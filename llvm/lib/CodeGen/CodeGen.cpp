@@ -125,6 +125,7 @@ void llvm::initializeCodeGen(PassRegistry &Registry) {
   initializeXRayInstrumentationPass(Registry);
   // dingzhu patch
   initializeMarkInstIndexPass(Registry);
+  initializeMyMIRPrinterPass(Registry);
 }
 
 void LLVMInitializeCodeGen(LLVMPassRegistryRef R) {

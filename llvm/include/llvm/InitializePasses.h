@@ -460,6 +460,7 @@ void initializeWriteThinLTOBitcodePass(PassRegistry&);
 void initializeXRayInstrumentationPass(PassRegistry&);
 // dingzhu patch
 void initializeMarkInstIndexPass(PassRegistry&);
+void initializeMyMIRPrinterPass(PassRegistry&);
 
 } // end namespace llvm
 
