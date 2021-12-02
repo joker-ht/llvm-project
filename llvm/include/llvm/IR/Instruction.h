@@ -369,6 +369,19 @@ public:
   /// Return the debug location for this node as a DebugLoc.
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
 
+  /// dingzhu patch
+  InstIndex *getInstIndex() const { return DbgLoc.getInstIndex(); }
+
+  const InstIndexSet &getInstIndexSet() const { return DbgLoc.getInstIndexSet(); }
+
+  void setInstIndex(InstIndex* ii) { DbgLoc.setInstIndex(ii); DbgLoc.appendInstIndexSet(ii); }
+
+  void setInstIndexSet(InstIndexSet iis) { DbgLoc.setInstIndexSet(iis); }
+
+  void appendInstIndexSet(InstIndex* ii) { DbgLoc.appendInstIndexSet(ii); }
+
+  void appendInstIndexSet(InstIndexSet iis) { DbgLoc.appendInstIndexSet(iis); }
+
   /// Set or clear the nuw flag on this instruction, which must be an operator
   /// which supports this flag. See LangRef.html for the meaning of this flag.
   void setHasNoUnsignedWrap(bool b = true);

@@ -417,6 +417,20 @@ public:
   /// Returns the debug location id of this MachineInstr.
   const DebugLoc &getDebugLoc() const { return debugLoc; }
 
+  /// dingzhu patch
+
+  InstIndex *getInstIndex() const { return debugLoc.getInstIndex(); }
+
+  const InstIndexSet &getInstIndexSet() const { return debugLoc.getInstIndexSet(); }
+
+  void setInstIndex(InstIndex *ii) { debugLoc.setInstIndex(ii); debugLoc.appendInstIndexSet(ii); }
+
+  void setInstIndexSet(InstIndexSet iis) { debugLoc.setInstIndexSet(iis); }
+
+  void appendInstIndexSet(InstIndex *ii) { debugLoc.appendInstIndexSet(ii); }
+
+  void appendInstIndexSet(InstIndexSet iis) { debugLoc.appendInstIndexSet(iis); }
+
   /// Return the operand containing the offset to be used if this DBG_VALUE
   /// instruction is indirect; will be an invalid register if this value is
   /// not indirect, and an immediate with value 0 otherwise.

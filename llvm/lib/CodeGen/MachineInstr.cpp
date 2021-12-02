@@ -1859,6 +1859,25 @@ void MachineInstr::print(raw_ostream &OS, ModuleSlotTracker &MST,
     DL.print(OS);
   }
 
+  // dingzhu patch: loc may be null, but index exsits
+  if (getDebugLoc().getInstIndex() && !this->isDebugValue() ) {
+    OS << " InstIndex: ";
+    this->getInstIndex()->print(OS);
+
+
+    InstIndexSet IIS = this->getInstIndexSet();
+    if (IIS.size()) {
+      OS << " InstIndexSet size: " <<  IIS.size() << " ";
+      InstIndexSet::iterator it = IIS.begin();
+      for (; it != IIS.end(); ++it) {
+        (*it)->print(OS);
+        OS << ", ";
+      }
+    } else {
+      OS << " No InstIndexSet";
+    }
+  }
+
   // Print extra comments for DEBUG_VALUE.
   if (isDebugValue() && getDebugVariableOp().isMetadata()) {
     if (!HaveSemi) {
