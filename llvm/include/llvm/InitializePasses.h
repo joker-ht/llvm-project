@@ -461,6 +461,8 @@ void initializeXRayInstrumentationPass(PassRegistry&);
 // dingzhu patch
 void initializeMarkInstIndexPass(PassRegistry&);
 void initializeMyMIRPrinterPass(PassRegistry&);
+void initializeMyMIRDumperPass(PassRegistry&);
+void initializeMyIRDumperPass(PassRegistry&);
 
 } // end namespace llvm
 
