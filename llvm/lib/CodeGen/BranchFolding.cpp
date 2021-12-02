@@ -1259,10 +1259,21 @@ static bool IsBetterFallthrough(MachineBasicBlock *MBB1,
 /// getBranchDebugLoc - Find and return, if any, the DebugLoc of the branch
 /// instructions on the block.
 static DebugLoc getBranchDebugLoc(MachineBasicBlock &MBB) {
-  MachineBasicBlock::iterator I = MBB.getLastNonDebugInstr();
-  if (I != MBB.end() && I->isBranch())
-    return I->getDebugLoc();
-  return DebugLoc();
+  // dingzhu patch
+  DebugLoc DL;
+
+  MachineBasicBlock::iterator TI = MBB.getFirstTerminator();
+  while (TI != MBB.end() && !TI->isBranch())
+    ++TI;
+
+  if (TI != MBB.end()) {
+    DL = TI->getDebugLoc();
+    // Todo: there may be 2 branbch inst, we ignore the 2nd one as the first
+    // is conbined with cmp inst, which may cause bug as it's just an inference based
+    // on experience.
+  }
+
+  return DL;
 }
 
 static void copyDebugInfoToPredecessor(const TargetInstrInfo *TII,

@@ -1419,9 +1419,11 @@ MachineBasicBlock::findBranchDebugLoc() {
 
   if (TI != end()) {
     DL = TI->getDebugLoc();
-    for (++TI ; TI != end() ; ++TI)
-      if (TI->isBranch())
-        DL = DILocation::getMergedLocation(DL, TI->getDebugLoc());
+    // for (++TI ; TI != end() ; ++TI)
+    //   if (TI->isBranch())
+    //     DL = DILocation::getMergedLocation(DL, TI->getDebugLoc());
+    // dingzhu patch: LLVM dev choose a vague dbginfo while dealing with merging 2 diff dbginfo 
+    // However, cond-br(ret of getFirstTerminator()) contains more insteres info
   }
   return DL;
 }
