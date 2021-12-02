@@ -823,6 +823,8 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
     if (!countsAsInstruction(MI))
       continue;
     DebugLoc DL = MI.getDebugLoc();
+    DebugLoc MDL(DL.get());
+    MDL.setInstIndex(DL.getInstIndex());
     for (unsigned int i = 0 ; i < NextCommonInsts.size() ; i++) {
       if (i == commonTailIndex)
         continue;
@@ -836,10 +838,11 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
             "Reached BB end within common tail");
       }
       assert(MI.isIdenticalTo(*Pos) && "Expected matching MIIs!");
-      DL = DILocation::getMergedLocation(DL, Pos->getDebugLoc());
+      // dingzhu patch
+      MDL.appendInstIndexSet(Pos->getDebugLoc().getInstIndexSet());
       NextCommonInsts[i] = ++Pos;
     }
-    MI.setDebugLoc(DL);
+    MI.setDebugLoc(MDL);
   }
 
   if (UpdateLiveIns) {
