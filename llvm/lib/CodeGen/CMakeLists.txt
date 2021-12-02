@@ -198,6 +198,8 @@ add_llvm_component_library(LLVMCodeGen
   LiveDebugValues/VarLocBasedImpl.cpp
   LiveDebugValues/InstrRefBasedImpl.cpp
 
+  MarkInstIndex.cpp
+
   ADDITIONAL_HEADER_DIRS
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/CodeGen
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/CodeGen/PBQP

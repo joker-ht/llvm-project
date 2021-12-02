@@ -458,6 +458,8 @@ void initializeWinEHPreparePass(PassRegistry&);
 void initializeWriteBitcodePassPass(PassRegistry&);
 void initializeWriteThinLTOBitcodePass(PassRegistry&);
 void initializeXRayInstrumentationPass(PassRegistry&);
+// dingzhu patch
+void initializeMarkInstIndexPass(PassRegistry&);
 
 } // end namespace llvm
 
