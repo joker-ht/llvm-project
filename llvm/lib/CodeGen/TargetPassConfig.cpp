@@ -256,6 +256,12 @@ static cl::opt<bool> DisableExpandReductions(
     "disable-expand-reductions", cl::init(false), cl::Hidden,
     cl::desc("Disable the expand reduction intrinsics pass from running"));
 
+/// dingzhu patch: add opt to control exe of my passes
+static cl::opt<bool> EnableMyMIRPrinterPass("my-mir-printer",
+                               cl::desc("Enable my pass for printing "
+                                        "Machine IR information"),
+                               cl::init(false), cl::Hidden); 
+
 /// Allow standard passes to be disabled by command line options. This supports
 /// simple binary flags that either suppress the pass or do nothing.
 /// i.e. -disable-mypass=false has no effect.
@@ -1235,6 +1241,10 @@ void TargetPassConfig::addMachinePasses() {
         sampleprof::FSDiscriminatorPass::PassLast));
 
   addPreEmitPass();
+
+  // dingzhu patch: add MIRPrinter pass before code-emition
+  if (EnableMyMIRPrinterPass)
+    addPass(createMyMIRPrinterPass());
 
   if (TM->Options.EnableIPRA)
     // Collect register usage information and produce a register mask of

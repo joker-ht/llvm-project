@@ -440,6 +440,10 @@ namespace llvm {
   /// dingzhu patch
   FunctionPass *createMarkInstIndexPass();
 
+  MachineFunctionPass *createMyMIRPrinterPass();
+
+  MachineFunctionPass *createMyMIRPrinterPass();
+
   /// GlobalMerge - This pass merges internal (by default) globals into structs
   /// to enable reuse of a base pointer by indexed addressing modes.
   /// It can also be configured to focus on size optimizations only.
