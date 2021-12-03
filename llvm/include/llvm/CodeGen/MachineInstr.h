@@ -904,6 +904,17 @@ public:
     return isBranch(Type) && isBarrier(Type) && !isIndirectBranch(Type);
   }
 
+  /// dingzhu patch: help us conveniently judge if an instr is cond-solver
+  /// (cond-branch, select, mathfromselect) not complete
+  bool isCondSolver(QueryType Type = AnyInBundle) const {
+    bool iscondbr = isConditionalBranch(Type);
+    bool isselect = isSelect(Type);
+    bool ret = this->getInstIndex() ? 
+                iscondbr || isselect || this->getInstIndex()->MathFromSelect == 1 
+              : iscondbr || isselect;
+    return ret;
+  }
+
   /// Return true if this instruction has a predicate operand that
   /// controls execution.  It may be set to 'always', or may be set to other
   /// values.   There are various methods in TargetInstrInfo that can be used to
