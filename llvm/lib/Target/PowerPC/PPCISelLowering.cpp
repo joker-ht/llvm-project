@@ -13575,6 +13575,13 @@ SDValue PPCTargetLowering::DAGCombineExtBoolTrunc(SDNode *N,
   SelectionDAG &DAG = DCI.DAG;
   SDLoc dl(N);
 
+  // dingzhu patch: these opcode contain more useful logic info than N
+  if (N->getOperand(0)->getOpcode() == ISD::SELECT ||
+      N->getOperand(0)->getOpcode() == ISD::SELECT_CC ||
+      N->getOperand(0)->getOpcode() == ISD::SETCC){
+    dl.setInstIndex(N->getOperand(0)->getInstIndex());
+  }
+
   // If we're tracking CR bits, we need to be careful that we don't have:
   //   zext(binary-ops(trunc(x), trunc(y)))
   // or

@@ -10549,6 +10549,12 @@ static SDValue tryToFoldExtendOfConstant(SDNode *N, const TargetLowering &TLI,
   EVT VT = N->getValueType(0);
   SDLoc DL(N);
 
+  // dingzhu patch
+  if (N0.getOpcode() == ISD::SELECT || N0.getOpcode() == ISD::SELECT_CC ||
+      N0.getOpcode() == ISD::SETCC){
+    DL.setInstIndex(N0.getDebugLoc().getInstIndex());
+  }
+
   assert((Opcode == ISD::SIGN_EXTEND || Opcode == ISD::ZERO_EXTEND ||
          Opcode == ISD::ANY_EXTEND || Opcode == ISD::SIGN_EXTEND_VECTOR_INREG ||
          Opcode == ISD::ZERO_EXTEND_VECTOR_INREG)
@@ -11195,6 +11201,13 @@ SDValue DAGCombiner::visitSIGN_EXTEND(SDNode *N) {
   EVT VT = N->getValueType(0);
   SDLoc DL(N);
 
+  // dingzhu patch: SIGN_EXTEND is just a simple extend node, 
+  // if N0's oprand is select/setcc, inherit N0's loc
+  if (N0.getOpcode() == ISD::SELECT || N0.getOpcode() == ISD::SELECT_CC ||
+      N0.getOpcode() == ISD::SETCC){
+    DL.setInstIndex(N0.getDebugLoc().getInstIndex());
+  }
+
   if (SDValue Res = tryToFoldExtendOfConstant(N, TLI, DAG, LegalTypes))
     return Res;
 
@@ -11440,6 +11453,14 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
   SDValue N0 = N->getOperand(0);
   EVT VT = N->getValueType(0);
 
+  SDLoc DL(N);
+  // dingzhu patch: ZERO_EXTEND is just a cast node, 
+  // if N0's oprand is select/setcc, shuold inherit N0's loc
+  if (N0.getOpcode() == ISD::SELECT || N0.getOpcode() == ISD::SELECT_CC ||
+      N0.getOpcode() == ISD::SETCC){
+    DL.setInstIndex(N0.getDebugLoc().getInstIndex());
+  }
+
   if (SDValue Res = tryToFoldExtendOfConstant(N, TLI, DAG, LegalTypes))
     return Res;
 
@@ -11520,7 +11541,6 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
     SDValue X = N0.getOperand(0).getOperand(0);
     X = DAG.getAnyExtOrTrunc(X, SDLoc(X), VT);
     APInt Mask = N0.getConstantOperandAPInt(1).zext(VT.getSizeInBits());
-    SDLoc DL(N);
     return DAG.getNode(ISD::AND, DL, VT,
                        X, DAG.getConstant(Mask, DL, VT));
   }
@@ -11574,7 +11594,6 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
                                          LN00->getMemoryVT(),
                                          LN00->getMemOperand());
         APInt Mask = N0.getConstantOperandAPInt(1).zext(VT.getSizeInBits());
-        SDLoc DL(N);
         SDValue And = DAG.getNode(N0.getOpcode(), DL, VT,
                                   ExtLoad, DAG.getConstant(Mask, DL, VT));
         ExtendSetCCUses(SetCCs, N0.getOperand(0), ExtLoad, ISD::ZERO_EXTEND);
@@ -11625,7 +11644,6 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
       // that matter). Check to see that they are the same size. If so, we know
       // that the element size of the sext'd result matches the element size of
       // the compare operands.
-      SDLoc DL(N);
       if (VT.getSizeInBits() == N00VT.getSizeInBits()) {
         // zext(setcc) -> zext_in_reg(vsetcc) for vectors.
         SDValue VSetCC = DAG.getNode(ISD::SETCC, DL, VT, N0.getOperand(0),
@@ -11672,8 +11690,6 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
         return SDValue();
     }
 
-    SDLoc DL(N);
-
     // Ensure that the shift amount is wide enough for the shifted value.
     if (Log2_32_Ceil(VT.getSizeInBits()) > ShAmt.getValueSizeInBits())
       ShAmt = DAG.getNode(ISD::ZERO_EXTEND, DL, MVT::i32, ShAmt);
@@ -11698,6 +11714,14 @@ SDValue DAGCombiner::visitZERO_EXTEND(SDNode *N) {
 SDValue DAGCombiner::visitANY_EXTEND(SDNode *N) {
   SDValue N0 = N->getOperand(0);
   EVT VT = N->getValueType(0);
+
+  SDLoc DL(N);
+  // dingzhu patch: ANY_EXTEND is just a cast node, 
+  // if N0's oprand is select/setcc, inherit N0's loc
+  if (N0.getOpcode() == ISD::SELECT || N0.getOpcode() == ISD::SELECT_CC ||
+      N0.getOpcode() == ISD::SETCC){
+    DL.setInstIndex(N0.getDebugLoc().getInstIndex());
+  }
 
   if (SDValue Res = tryToFoldExtendOfConstant(N, TLI, DAG, LegalTypes))
     return Res;
@@ -11726,7 +11750,7 @@ SDValue DAGCombiner::visitANY_EXTEND(SDNode *N) {
 
   // fold (aext (truncate x))
   if (N0.getOpcode() == ISD::TRUNCATE)
-    return DAG.getAnyExtOrTrunc(N0.getOperand(0), SDLoc(N), VT);
+    return DAG.getAnyExtOrTrunc(N0.getOperand(0), DL, VT);
 
   // Fold (aext (and (trunc x), cst)) -> (and x, cst)
   // if the trunc is not free.
@@ -11735,7 +11759,6 @@ SDValue DAGCombiner::visitANY_EXTEND(SDNode *N) {
       N0.getOperand(1).getOpcode() == ISD::Constant &&
       !TLI.isTruncateFree(N0.getOperand(0).getOperand(0).getValueType(),
                           N0.getValueType())) {
-    SDLoc DL(N);
     SDValue X = N0.getOperand(0).getOperand(0);
     X = DAG.getAnyExtOrTrunc(X, DL, VT);
     APInt Mask = N0.getConstantOperandAPInt(1).zext(VT.getSizeInBits());
@@ -11817,7 +11840,7 @@ SDValue DAGCombiner::visitANY_EXTEND(SDNode *N) {
       // we know that the element size of the sext'd result matches the
       // element size of the compare operands.
       if (VT.getSizeInBits() == N00VT.getSizeInBits())
-        return DAG.getSetCC(SDLoc(N), VT, N0.getOperand(0),
+        return DAG.getSetCC(DL, VT, N0.getOperand(0),
                              N0.getOperand(1),
                              cast<CondCodeSDNode>(N0.getOperand(2))->get());
 
@@ -11826,14 +11849,13 @@ SDValue DAGCombiner::visitANY_EXTEND(SDNode *N) {
       // truncate/any extend
       EVT MatchingVectorType = N00VT.changeVectorElementTypeToInteger();
       SDValue VsetCC =
-        DAG.getSetCC(SDLoc(N), MatchingVectorType, N0.getOperand(0),
+        DAG.getSetCC(DL, MatchingVectorType, N0.getOperand(0),
                       N0.getOperand(1),
                       cast<CondCodeSDNode>(N0.getOperand(2))->get());
-      return DAG.getAnyExtOrTrunc(VsetCC, SDLoc(N), VT);
+      return DAG.getAnyExtOrTrunc(VsetCC, DL, VT);
     }
 
     // aext(setcc x,y,cc) -> select_cc x, y, 1, 0, cc
-    SDLoc DL(N);
     if (SDValue SCC = SimplifySelectCC(
             DL, N0.getOperand(0), N0.getOperand(1), DAG.getConstant(1, DL, VT),
             DAG.getConstant(0, DL, VT),
