@@ -838,6 +838,10 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
       continue;
     DebugLoc DL = MI.getDebugLoc();
     DebugLoc MDL(DL.get());
+    // dingzhu patch: add label to transformed insts
+    InstIndex* II = DL.getInstIndex();
+    if (II)
+      II->TailMerged = 1;
     MDL.setInstIndex(DL.getInstIndex());
     MDL.setInstIndexSet(DL.getInstIndexSet());
     for (unsigned int i = 0 ; i < NextCommonInsts.size() ; i++) {
@@ -857,6 +861,13 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
       MDL.appendInstIndexSet(Pos->getDebugLoc().getInstIndexSet());
       NextCommonInsts[i] = ++Pos;
     }
+    InstIndexSet LabeledIIS;
+    for (InstIndexSet::iterator it = MDL.getInstIndexSet().begin(); it != MDL.getInstIndexSet().end(); ++it) {
+      if (*it == nullptr) continue;
+      (*it)->TailMerged = 1;
+      LabeledIIS.insert(*it);
+    }
+    MDL.setInstIndexSet(LabeledIIS);
     MI.setDebugLoc(MDL);
   }
 

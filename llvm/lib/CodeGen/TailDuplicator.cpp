@@ -390,6 +390,17 @@ void TailDuplicator::duplicateInstruction(
       MI->getOperand(0).getCFIIndex());
     return;
   }
+  // dingzhu patch: idx should inherit the correct one
+  InstIndexSet IIS = MI->getInstIndexSet();
+  InstIndexSet::iterator it = IIS.begin();
+  for (; it != IIS.end(); ++it) {
+    if (*it == nullptr) continue;
+    if ((*it)->getBBLabel() == PredBB->getBasicBlock()->getName()) {
+      (*it)->TailDuplicated = 1;
+      MI->setInstIndex(*it);
+      break;
+    }
+  }
   MachineInstr &NewMI = TII->duplicate(*PredBB, PredBB->end(), *MI);
   if (PreRegAlloc) {
     for (unsigned i = 0, e = NewMI.getNumOperands(); i != e; ++i) {
@@ -782,8 +793,20 @@ bool TailDuplicator::duplicateSimpleBB(
       assert(PredBB->succ_size() <= 1);
     }
 
-    if (PredTBB)
+    if (PredTBB) {
+      // dingzhu patch
+      InstIndexSet IIS = DL.getInstIndexSet();
+      InstIndexSet::iterator it = IIS.begin();
+      for (; it != IIS.end(); ++it) {
+        if (*it == nullptr) continue;
+        if ((*it)->getBBLabel() == PredTBB->getBasicBlock()->getName()) {
+          (*it)->TailDuplicated = 1;
+          DL.setInstIndex(*it);
+          break;
+        }
+      }
       TII->insertBranch(*PredBB, PredTBB, PredFBB, PredCond, DL);
+    }
 
     TDBBs.push_back(PredBB);
   }
@@ -955,6 +978,17 @@ bool TailDuplicator::tailDuplicate(bool IsSimple, MachineBasicBlock *TailBB,
       } else {
         TII->removeBranch(*PrevBB);
         // No PHIs to worry about, just splice the instructions over.
+        // dingzhu patch: duplicated inst should get correct index
+        for (auto &MI : make_range(TailBB->begin(), TailBB->end())) {
+          InstIndexSet IIS = MI.getInstIndexSet();
+          for (InstIndexSet::iterator it = IIS.begin(); it != IIS.end(); ++it) {
+            if (*it == nullptr) continue;
+            if ((*it)->getBBLabel() == PrevBB->getBasicBlock()->getName()) {
+              (*it)->TailDuplicated = 1;
+              MI.setInstIndex(*it);
+            }
+          }
+        }
         PrevBB->splice(PrevBB->end(), TailBB, TailBB->begin(), TailBB->end());
       }
       PrevBB->removeSuccessor(PrevBB->succ_begin());

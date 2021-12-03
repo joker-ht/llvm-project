@@ -56,11 +56,16 @@ namespace llvm {
     const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
 
     /// when initializing Index, remember to initialize InstIndexSet
-    void setInstIndex(InstIndex *SrcIndex) { ThisIndex = SrcIndex; ThisIndexSet.insert(SrcIndex);}
+    void setInstIndex(InstIndex *SrcIndex) { 
+      if (SrcIndex != nullptr) {
+        ThisIndex = SrcIndex; 
+        ThisIndexSet.insert(SrcIndex);
+      }
+    }
 
     void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
 
-    void appendInstIndexSet(InstIndex *SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+    void appendInstIndexSet(InstIndex *SrcIndex) { if (SrcIndex != nullptr) ThisIndexSet.insert(SrcIndex); }
 
     void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
 

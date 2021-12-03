@@ -9635,6 +9635,15 @@ SDValue DAGCombiner::visitSELECT(SDNode *N) {
   EVT VT = N->getValueType(0);
   EVT VT0 = N0.getValueType();
   SDLoc DL(N);
+
+  // dingzhu patch: add label to transformed insts
+  InstIndex *II = DL.getInstIndex();
+  auto MathDL = DL;
+  if (II) {
+    II->MathFromSelect = 1;
+    MathDL.setInstIndex(II);
+  }
+
   SDNodeFlags Flags = N->getFlags();
 
   if (SDValue V = DAG.simplifySelect(N0, N1, N2))
@@ -9697,7 +9706,7 @@ SDValue DAGCombiner::visitSELECT(SDNode *N) {
       if (N1_2 == N2 && N0.getValueType() == N1_0.getValueType()) {
         // Create the actual and node if we can generate good code for it.
         if (!normalizeToSequence) {
-          SDValue And = DAG.getNode(ISD::AND, DL, N0.getValueType(), N0, N1_0);
+          SDValue And = DAG.getNode(ISD::AND, MathDL, N0.getValueType(), N0, N1_0);
           return DAG.getNode(ISD::SELECT, DL, N1.getValueType(), And, N1_1,
                              N2, Flags);
         }
@@ -9716,7 +9725,7 @@ SDValue DAGCombiner::visitSELECT(SDNode *N) {
       if (N2_1 == N1 && N0.getValueType() == N2_0.getValueType()) {
         // Create the actual or node if we can generate good code for it.
         if (!normalizeToSequence) {
-          SDValue Or = DAG.getNode(ISD::OR, DL, N0.getValueType(), N0, N2_0);
+          SDValue Or = DAG.getNode(ISD::OR, MathDL, N0.getValueType(), N0, N2_0);
           return DAG.getNode(ISD::SELECT, DL, N1.getValueType(), Or, N1,
                              N2_2, Flags);
         }
@@ -9745,7 +9754,7 @@ SDValue DAGCombiner::visitSELECT(SDNode *N) {
     //
     // This is OK if we don't care what happens if either operand is a NaN.
     if (N0.hasOneUse() && isLegalToCombineMinNumMaxNum(DAG, N1, N2, TLI))
-      if (SDValue FMinMax = combineMinNumMaxNum(DL, VT, Cond0, Cond1, N1, N2,
+      if (SDValue FMinMax = combineMinNumMaxNum(MathDL, VT, Cond0, Cond1, N1, N2,
                                                 CC, TLI, DAG))
         return FMinMax;
 
