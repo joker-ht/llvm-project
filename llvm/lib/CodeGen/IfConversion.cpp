@@ -2284,6 +2284,10 @@ void IfConverter::CopyAndPredicateBlock(BBInfo &ToBBI, BBInfo &FromBBI,
 /// edge from ToBBI to FromBBI.
 void IfConverter::MergeBlocks(BBInfo &ToBBI, BBInfo &FromBBI, bool AddEdges) {
   MachineBasicBlock &FromMBB = *FromBBI.BB;
+
+  // dingzhu patch
+  ToBBI.BB->appendBasicBlockSet(FromBBI.BB->getBBSet());
+
   assert(!FromMBB.hasAddressTaken() &&
          "Removing a BB whose address is taken!");
 

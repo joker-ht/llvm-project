@@ -807,10 +807,24 @@ mergeOperations(MachineBasicBlock::iterator MBBIStartPos,
 
 void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
   MachineBasicBlock *MBB = SameTails[commonTailIndex].getBlock();
+  
+  // dingzhu patch: use set to collect BB labels;
+  // std::set<const BasicBlock*> BBs;
+  if (MBB->getBasicBlock())
+    MBB->appendBasicBlockSet(MBB->getBasicBlock());
 
   std::vector<MachineBasicBlock::iterator> NextCommonInsts(SameTails.size());
   for (unsigned int i = 0 ; i != SameTails.size() ; ++i) {
     if (i != commonTailIndex) {
+      if (SameTails[i].getBlock()->getBasicBlock()) {
+        if (SameTails[i].getBlock()->getBBSet().size()) {
+          std::set<const BasicBlock*> BBs = SameTails[i].getBlock()->getBBSet();
+          MBB->appendBasicBlockSet(BBs);
+        }
+        else {
+          MBB->appendBasicBlockSet(SameTails[i].getBlock()->getBasicBlock());
+        }
+      }
       NextCommonInsts[i] = SameTails[i].getTailStartPos();
       mergeOperations(SameTails[i].getTailStartPos(), *MBB);
     } else {
